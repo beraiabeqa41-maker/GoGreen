@@ -3,38 +3,29 @@ import moment from "moment";
 import simpleGit from "simple-git";
 import random from "random";
 
-const path = "./data.json"; 
+const git = simpleGit();
+const path = "./data.json";
 
-const markCommit = (x, y) => {
-  const date = moment()
-    .subtract(1, "y")
-    .add(1, "d")
-    .add(x, "w")
-    .add(y, "d")
-    .format();
-
-  const data = {
-    date: date,
-  };
-
-  jsonfile.writeFile(path, data, () => {
-    simpleGit().add([path]).commit(date, { "--date": date }).push();
-  });
-};
-
-const makeCommits = (n) => {
-  if(n===0) return simpleGit().push();
+const makeCommits = async (n) => {
+  if (n === 0) {
+    console.log("Pushing commits...");
+    await git.push();
+    return;
+  }
 
   const daysBack = random.int(0, 60);
   const date = moment().subtract(daysBack, "d").format();
 
-  const data = {
-    date: date,
-  };
-  console.log(date);
-  jsonfile.writeFile(path, data, () => {
-    simpleGit().add([path]).commit(date, { "--date": date },makeCommits.bind(this,--n));
-  });
+  const data = { date };
+  console.log("Commit date:", date);
+
+  await jsonfile.writeFile(path, data);
+
+  await git.add([path]);
+  await git.commit(date, { "--date": date });
+
+  await makeCommits(n - 1);
 };
 
 makeCommits(10);
+``
